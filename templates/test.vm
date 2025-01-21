@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <style type="text/css">
+    /* RESET STYLES */
+    body {
+      font-family: Helvetica, arial, sans-serif;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+    }
+    table { border-collapse: collapse !important; }
+    span { border: none !important; }
+    p,
+    span,
+    a,
+    strong { color: inherit !important; }
+    /* ANDROID CENTER FIX */
+    div[style*="margin: 16px 0;"] { margin: 0 !important; }
+    :root {
+      Color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }
+    /*TEXT STYLE*/
+    .email-body__message {
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 18px;
+      color: rgba(25, 34, 42, 0.7);
+    }
+    .email-footer__content--img-download a>table {
+      width: 70px !important;
+      max-width: 70px;
+      height: 20px;
+    }
+    .email-footer__alert--link {
+      text-decoration: none;
+      color: #006DEA !important;
+    }
+    /* USP ICON GROUP */
+    .email-usp__content {
+      width: 100%;
+      overflow: hidden;
+    }
+    .email-usp__content table:first-child {
+      width: 60% !important;
+      float: left;
+      box-sizing: border-box;
+    }
+    .email-usp__content table:last-child {
+      width: 40% !important;
+      float: left;
+      box-sizing: border-box;
+    }
+    .email-usp__content--item:not(:last-child) { padding-right: 4px; }
+    .email-usp__content--item p {
+      margin: 6px 0 0;
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 14px;
+      color: rgba(25, 34, 42, 0.7);
+    }
+    /* FOOTER ICON */
+    .email-prefooter__cs--leading-icon img {
+      width: 24px !important;
+      height: 24px !important;
+      margin-top: 8px !important;
+    }
+    /* MOBILE BREAKPOINT */
+    @media only screen and (max-width:480px) {
+      body { padding: 10px }
+      .email-usp__content table {
+        width: 100% !important;
+        float: none;
+      }
+      .email-header img { width: 110px !important; }
+      .email-usp__content table:first-child {
+        width: 100% !important;
+        float: none;
+        margin-bottom: 16px;
+      }
+      .email-usp__content table:last-child {
+        width: 100% !important;
+        float: none;
+      }
+      .email-footer__content--table { width: 100%; }
+      .email-footer__content--table-bottom {
+        padding: 16px 0 0 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        place-content: center;
+      }
+      .email-footer__content--footer-bottom .wrapper { display: block !important; }
+      .email-usp__content--item-text-breakpoint {
+        display: none;
+      }
+    }
+    /* DARK MODE */
+    @media (prefers-color-scheme: dark) {
+      body table { background-color: transparent; }
+      span { border: none !important; }
+      /* Custom Dark Mode Background Colors */
+      .email-template table { background-color: #12171D; }
+      .email-template__border { outline: 1px solid #3B444C !important; }
+      .email-header { background-color: #12171D; }
+      .email-body { background-color: #12171D; }
+      .email-usp__content { background-color: #19222A !important; }
+      .email-usp__content table { background-color: #19222A !important; }
+      .email-usp__content-wrapper { background-color: #19222A !important; }
+      .email-prefooter { background-color: #12171D; }
+      .email-footer__alert { background-color: #4D2C02; }
+      .email-footer__content { background-color: #12171D; }
+      .email-footer__content--separator-bottom { border-bottom: 1px solid #28323B !important; }
+      .email-prefooter__rewards--leading-icon div { background-color: #19222A !important; }
+      .email-prefooter__cs--leading-icon div { background-color: #19222A !important; }
+      .vertical-separator { border-left: 1px solid #60686E !important; }
+      /* Custom Dark Mode Font Colors */
+      p,
+      span,
+      a,
+      strong { color: #FFFFFF !important; }
+      .email-body__message span { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-usp__content--item p { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-prefooter__cs--content .desc a { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-prefooter__rewards--content .desc span { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-footer__alert span { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-footer__alert span>a { color: #4FA4FF !important; }
+      .email-footer__content--footer-top span { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-footer__content--footer-top a { color: rgba(255, 255, 255, 0.8) !important; }
+      .email-footer__content--footer-bottom span { color: rgba(255, 255, 255, 0.5) !important; }
+      .email-footer__content--footer-bottom a { color: rgba(255, 255, 255, 0.5) !important; }
+      /* Custom Dark Mode Assets */
+      .color-theme-light { display: none !important; }
+      .color-theme-dark { display: revert !important; }
+      .color-theme-dark-decorative { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+<br>
+<table border="0" cellpadding="0" cellspacing="0" bgcolor="#ffffff" width="100%">
+  <tr>
+    <td class="email-template" align="center">
+      <table border="0" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width: 800px; width: 100%; border-radius: 8px; mso-border-radius-alt: 8px; outline: 1px solid #E1E3E4;margin: 3px 0;" class="email-template__border">
+
+        <tr>
+          <td class="email-header" cellspacing="0" align="left" bgcolor="#ffffff" style="padding:24px 32px 24px 32px; border-radius: 8px 8px 0 0; mso-border-radius-alt: 8px 8px 0 0;">
+            <table>
+              <tr>
+                <td class="color-theme-light">
+                  <img class="email-header__logo-blibli" src="https://www.static-src.com/siva/asset/08_2023/email-logo-blibli-horizontal-fullcolor.png" alt="Blibli Logo" width="160">
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="email-body" cellspacing="0" align="left" bgcolor="#ffffff" style="padding:12px 32px">
+            <table border="0" cellspacing="0" cellpadding="0" style="width: 100% !important;">
+              <tbody>
+              <tr>
+                <td class="email-body__message" cellspacing="0" style="padding-top:20px; font-size: 14px; font-style: normal; font-weight: 400; line-height: 18px; color: rgba(25, 34, 42, 0.7);">
+
+                      <span> All,<br/><br/>
+                        Below are the bitbucket events that occurred across <b>$data.projectKey</b> projects from <b>$data.startDateTime</b> to <b>$data.endDateTime</b>:
+                      <br/><br/>
+
+                        <div style="display:flex">
+                          <div style="padding:8px 12px; width:50%; margin-bottom:8px; margin-right:8px; background-color: #2faa491a; border-radius: 8px; mso-border-radius-alt: 8px;">
+                            <table>
+                              <tr><td style="font-weight: bold">Pull Request Created Event</td></tr>
+                              <tr><td>☆ Total Events: $data.createdEventCount</td></tr>
+                            </table>
+                          </div>
+                          <div style="padding:8px 12px; width:50%; margin-bottom:8px; margin-right:8px; background-color: #2faa491a; border-radius: 8px; mso-border-radius-alt: 8px;">
+                            <table>
+                              <tr><td style="font-weight: bold">Pull Request Updated Event</td></tr>
+                              <tr><td>☆ Total Events: $data.updatedEventCount</td></tr>
+                            </table>
+                          </div>
+                        </div>
+
+                        <br>
+
+                      Thank you, <br> BliBli - Developer Productivity Team
+                      <br><br>
+
+
+                      <div class="email-usp__content" style="width: auto; overflow: hidden; padding: 16px; background-color: #FFF8E0; border-radius: 8px; mso-border-radius-alt: 8px;">
+                      This is a system generated email, please do not reply to this email.
+                      </div>
+
+
+                      </span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+
+        <tr>
+          <td class="color-theme-light"><br/>
+            <img src="https://www.static-src.com/siva/asset/08_2023/footer-decorative-default.png" alt="" width="100%" style="display: block;">
+          </td>
+        </tr>
+
+    </td>
+  </tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
