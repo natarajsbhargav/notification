@@ -1,16 +1,23 @@
 package com.otwr.notification.service.impl;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -18,6 +25,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.otwr.notification.exceptions.BusinessException;
 import com.otwr.notification.model.EmailRequest;
@@ -120,8 +128,50 @@ public class EmailServiceImpl implements EmailService {
       }
       message.setContent(multipart);
       Transport.send(message);
+      log.info("Email sent Successfully for the Request: {}", emailRequest);
     } catch (Exception e) {
       log.error("Error occurred while sending Email: {} - Error: {}", emailRequest, e.getMessage(), e);
+      throw ExceptionHelper.checkBusinessException(e);
+    }
+  }
+
+  @Override
+  public void sendEmailsByCsv(String templateName, MultipartFile csvFile) {
+    try {
+      if (StringUtils.isBlank(templateName)) {
+        throw BusinessException.builder().errorCode(ErrorCode.INVALID_TEMPLATE_NAME)
+            .errorMessage(ErrorCode.INVALID_TEMPLATE_NAME.getMessage()).build();
+      }
+      if (csvFile == null || csvFile.isEmpty() || !csvFile.getOriginalFilename().toLowerCase().endsWith(".csv")) {
+        throw BusinessException.builder().errorCode(ErrorCode.INVALID_CSV_FILE)
+            .errorMessage(ErrorCode.INVALID_CSV_FILE.getMessage()).build();
+      }
+      velocityEngine.getTemplate(String.format("templates/%s.vm", templateName.toLowerCase()));
+      Reader reader = new BufferedReader(new InputStreamReader(csvFile.getInputStream()));
+      CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+      List<CSVRecord> records = csvParser.getRecords();
+      if (records.isEmpty()) {
+        throw BusinessException.builder().errorCode(ErrorCode.EMPTY_CSV_FILE)
+            .errorMessage(ErrorCode.EMPTY_CSV_FILE.getMessage()).build();
+      }
+      for (CSVRecord csvRecord : records) {
+        Map<String, String> rowMap = new HashMap<>();
+        for (String header : csvParser.getHeaderNames()) {
+          rowMap.put(header, csvRecord.get(header));
+        }
+        try {
+          EmailRequest emailRequest = EmailRequest.builder().templateName(templateName).subject(rowMap.get("subject"))
+              .attachmentName(rowMap.get("attachmentName")).recipientsTo(rowMap.get("recipientsTo"))
+              .recipientsCc(rowMap.get("recipientsCc")).recipientsBcc(rowMap.get("recipientsBcc"))
+              .data(rowMap.get("data")).build();
+          this.sendEmail(emailRequest);
+        } catch (Exception e) {
+          log.error("Error occurred while sending Email via CSV: {} to {} - Error: {}", csvFile, csvRecord,
+              e.getMessage());
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error occurred while sending Emails via CSV: {} - Error: {}", csvFile.getName(), e.getMessage(), e);
       throw ExceptionHelper.checkBusinessException(e);
     }
   }

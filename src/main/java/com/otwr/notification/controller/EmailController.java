@@ -1,10 +1,14 @@
 package com.otwr.notification.controller;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.otwr.notification.exceptions.BusinessException;
 import com.otwr.notification.model.EmailRequest;
@@ -35,6 +39,29 @@ public class EmailController {
           .error(Error.builder().errorCode(be.getErrorCode()).errorMessage(be.getErrorMessage()).build()).build();
     } catch (Exception e) {
       log.error("Error occurred while sending Email - Error: {}", e.getMessage(), e);
+      responseBody = ResponseBody.<String>builder().success(false).data(null).error(
+          Error.builder().errorCode(ErrorCode.UNKNOWN_EXCEPTION).errorMessage(ErrorCode.UNKNOWN_EXCEPTION.getMessage())
+              .build()).build();
+    }
+    return responseBody;
+  }
+
+  @PostMapping("/sendEmailsByCsv")
+  public ResponseBody<String> sendEmailsByCsv(@RequestParam("templateName") String templateName,
+      @RequestParam("csvFile") MultipartFile csvFile) {
+
+    ResponseBody<String> responseBody;
+    try {
+      emailService.sendEmailsByCsv(templateName, csvFile);
+      responseBody = ResponseBody.<String>builder().success(true)
+          .data(String.format("Emails Sent Successfully to Csv: %s", csvFile.getName())).error(null).build();
+    } catch (BusinessException be) {
+      log.error("Error occurred while sending Email to Csv: {} - Error: {}", csvFile.getName(), be.getErrorMessage(),
+          be);
+      responseBody = ResponseBody.<String>builder().success(false).data(null)
+          .error(Error.builder().errorCode(be.getErrorCode()).errorMessage(be.getErrorMessage()).build()).build();
+    } catch (Exception e) {
+      log.error("Error occurred while sending Email to Csv: {} - Error: {}", csvFile.getName(), e.getMessage(), e);
       responseBody = ResponseBody.<String>builder().success(false).data(null).error(
           Error.builder().errorCode(ErrorCode.UNKNOWN_EXCEPTION).errorMessage(ErrorCode.UNKNOWN_EXCEPTION.getMessage())
               .build()).build();
