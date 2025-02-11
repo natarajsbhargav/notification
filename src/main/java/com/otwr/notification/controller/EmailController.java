@@ -48,20 +48,20 @@ public class EmailController {
 
   @PostMapping("/sendEmailsByCsv")
   public ResponseBody<String> sendEmailsByCsv(@RequestParam("templateName") String templateName,
-      @RequestParam("csvFile") MultipartFile csvFile) {
+      @RequestParam("csvFileName") String csvFileName) {
 
     ResponseBody<String> responseBody;
     try {
-      emailService.sendEmailsByCsv(templateName, csvFile);
+      emailService.sendEmailsByCsv(templateName, csvFileName);
       responseBody = ResponseBody.<String>builder().success(true)
-          .data(String.format("Emails Sent Successfully to Csv: %s", csvFile.getName())).error(null).build();
+          .data(String.format("Emails Sent Successfully to Csv: %s", csvFileName)).error(null).build();
     } catch (BusinessException be) {
-      log.error("Error occurred while sending Email to Csv: {} - Error: {}", csvFile.getName(), be.getErrorMessage(),
+      log.error("Error occurred while sending Email to Csv: {} - Error: {}", csvFileName, be.getErrorMessage(),
           be);
       responseBody = ResponseBody.<String>builder().success(false).data(null)
           .error(Error.builder().errorCode(be.getErrorCode()).errorMessage(be.getErrorMessage()).build()).build();
     } catch (Exception e) {
-      log.error("Error occurred while sending Email to Csv: {} - Error: {}", csvFile.getName(), e.getMessage(), e);
+      log.error("Error occurred while sending Email to Csv: {} - Error: {}", csvFileName, e.getMessage(), e);
       responseBody = ResponseBody.<String>builder().success(false).data(null).error(
           Error.builder().errorCode(ErrorCode.UNKNOWN_EXCEPTION).errorMessage(ErrorCode.UNKNOWN_EXCEPTION.getMessage())
               .build()).build();

@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.time.LocalDateTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +26,10 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otwr.notification.exceptions.BusinessException;
 import com.otwr.notification.model.EmailRequest;
 import com.otwr.notification.service.EmailService;
@@ -52,6 +55,9 @@ public class EmailServiceImpl implements EmailService {
 
   @Autowired
   private VelocityEngine velocityEngine;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Value("${spring.mail.host:smtp.gmail.com}")
   private String host;
@@ -136,18 +142,23 @@ public class EmailServiceImpl implements EmailService {
   }
 
   @Override
-  public void sendEmailsByCsv(String templateName, MultipartFile csvFile) {
+  public void sendEmailsByCsv(String templateName, String csvFileName) {
     try {
       if (StringUtils.isBlank(templateName)) {
         throw BusinessException.builder().errorCode(ErrorCode.INVALID_TEMPLATE_NAME)
             .errorMessage(ErrorCode.INVALID_TEMPLATE_NAME.getMessage()).build();
       }
-      if (csvFile == null || csvFile.isEmpty() || !csvFile.getOriginalFilename().toLowerCase().endsWith(".csv")) {
+      if (StringUtils.isBlank(csvFileName)) {
+        throw BusinessException.builder().errorCode(ErrorCode.INVALID_CSV_FILE_NAME)
+            .errorMessage(ErrorCode.INVALID_CSV_FILE_NAME.getMessage()).build();
+      }
+      Path csvPath = Paths.get(String.format("files/%s.csv", csvFileName));
+      if (Files.notExists(csvPath)) {
         throw BusinessException.builder().errorCode(ErrorCode.INVALID_CSV_FILE)
-            .errorMessage(ErrorCode.INVALID_CSV_FILE.getMessage()).build();
+            .errorMessage(String.format(ErrorCode.INVALID_CSV_FILE.getMessage(), csvFileName)).build();
       }
       velocityEngine.getTemplate(String.format("templates/%s.vm", templateName.toLowerCase()));
-      Reader reader = new BufferedReader(new InputStreamReader(csvFile.getInputStream()));
+      Reader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(csvPath)));
       CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
       List<CSVRecord> records = csvParser.getRecords();
       if (records.isEmpty()) {
@@ -155,23 +166,23 @@ public class EmailServiceImpl implements EmailService {
             .errorMessage(ErrorCode.EMPTY_CSV_FILE.getMessage()).build();
       }
       for (CSVRecord csvRecord : records) {
-        Map<String, String> rowMap = new HashMap<>();
-        for (String header : csvParser.getHeaderNames()) {
-          rowMap.put(header, csvRecord.get(header));
-        }
         try {
+          Map<String, String> rowMap = new HashMap<>();
+          for (String header : csvParser.getHeaderNames()) {
+            rowMap.put(header, csvRecord.get(header));
+          }
           EmailRequest emailRequest = EmailRequest.builder().templateName(templateName).subject(rowMap.get("subject"))
               .attachmentName(rowMap.get("attachmentName")).recipientsTo(rowMap.get("recipientsTo"))
               .recipientsCc(rowMap.get("recipientsCc")).recipientsBcc(rowMap.get("recipientsBcc"))
-              .data(rowMap.get("data")).build();
+              .data(objectMapper.readValue(rowMap.get("data"), Object.class)).build();
           this.sendEmail(emailRequest);
         } catch (Exception e) {
-          log.error("Error occurred while sending Email via CSV: {} to {} - Error: {}", csvFile, csvRecord,
+          log.error("Error occurred while sending Email via CSV: {} to {} - Error: {}", csvFileName, csvRecord,
               e.getMessage());
         }
       }
     } catch (Exception e) {
-      log.error("Error occurred while sending Emails via CSV: {} - Error: {}", csvFile.getName(), e.getMessage(), e);
+      log.error("Error occurred while sending Emails via CSV: {} - Error: {}", csvFileName, e.getMessage(), e);
       throw ExceptionHelper.checkBusinessException(e);
     }
   }
